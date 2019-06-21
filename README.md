@@ -13,3 +13,7 @@ npm install
 electron:serve
 
 ```
+
+## 截图
+
+![demo](./demo.png)
