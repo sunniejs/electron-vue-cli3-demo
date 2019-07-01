@@ -1,17 +1,27 @@
 <template>
-  <div class="home">
-    <ImageList />
+  <div>
+    <PrintWebView />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import ImageList from '@/components/ImageList.vue'
-
+import PrintWebView from '@/components/PrintWebView'
 export default {
-  name: 'home',
-  components: {
-    ImageList
+  name: "landing-page",
+  components: { PrintWebView },
+  data() {
+    return {
+      print0: "",
+      print1: "",
+      xmlTemplate: ''
+    };
+  },
+  mounted() {
+  },
+  methods: {
   }
-}
+};
 </script>
+
+<style>
+</style>

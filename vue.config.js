@@ -7,7 +7,7 @@ function resolve(dir) {
 // const name = 'electron-vue-example' // page title
 const port = 9020
 module.exports = {
-  // publicPath: '/',
+    publicPath: '/',
   // outputDir: 'dist',
   // assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',

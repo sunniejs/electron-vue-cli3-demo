@@ -1,15 +1,20 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, Tray, crashReporter } from 'electron'
 import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib'
+// import ipcMainEvent from './electron/event'
+import { setTray } from './electron/tray'
+import { setMenu } from './electron/menu'
+import { onCrash } from './electron/crash'
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
 // 添加一个imageWindow
 let imageWindow
 let aboutWindow
+//注意！！: 防止变量被V8回收导致功能不正常，需要在函数体外部创建变量
+let tray = null
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }])
@@ -45,15 +50,21 @@ function createWindow() {
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    console.log(process.env.WEBPACK_DEV_SERVER_URL + 'about')
     imageWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + '/#/image')
-    aboutWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + '/#/about')
+    aboutWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'about')
     if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
   }
-
+  //设置托盘
+  tray = setTray(win)
+  //设置菜单
+  setMenu()
+  // 崩溃监控
+  onCrash(win)
   win.on('closed', () => {
     win = null
   })
@@ -113,6 +124,7 @@ if (isDevelopment) {
     })
   }
 }
+
 //ipcMain 模块有如下监听事件方法:
 // 监听 组件@/compontents/ImageList.vue methods:openImage下的ipcRenderer.send("toggle-image", image)
 // render 发送消息，main 接收消息
@@ -126,3 +138,17 @@ ipcMain.on('toggle-image', (event, arg) => {
 ipcMain.on('toggle-about', (event, arg) => {
   aboutWindow.show()
 })
+// 获取打印机
+ipcMain.on('getPrinterList', event => {
+  //在主线程中获取打印机列表
+  const printers = win.webContents.getPrinters()
+  console.log(printers)
+  //通过webContents发送事件到渲染线程，同时将打印机列表也传过去
+  win.webContents.send('getPrinterList', printers)
+})
+// 初始化事件监听,在/electron/event中写监听事件，这里统一引入
+// Object.keys(ipcMainEvent).forEach(key => {
+//   ipcMain.on(key, (event, ...args) => {
+//     ipcMainEvent[key](event, winodws, ...args)
+//   })
+// })
