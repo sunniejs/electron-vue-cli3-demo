@@ -6,7 +6,7 @@
 
 ```
 // 克隆
-git clone https://github.com/sunnie1992/electron-vue-cli3-demo.git
+git clone https://github.com/sunniejs/electron-vue-cli3-demo.git
 // 安装依赖
 npm install
 // 运用
